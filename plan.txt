@@ -1,0 +1,91 @@
+~ Super Alarm Clock - python project ~
+
+class SuperAlarmClock:
+    def __init__('welcome'):
+        DEFINITION: 
+            This alarm clock main goal is to wake you up with your favorite playlist or song.
+            It sholud determine the hour to alarm according to your events on google calander.
+        USER_EXPERIENCE: 
+            bootstrap with links and buttons.
+            once a day the code will jump a new tab with the playlist.
+        VARIABLES: user can change with input.
+            morning_start_time
+            morning_end_time
+            wakeup_time
+            sleep_hours
+            snooze_minutes
+            sleep_time
+            
+        for more see features:
+            sleep_tracker()
+            graph() 
+            snooze()
+            lock_screan()
+            calander()
+            things_to_add = {
+                logo and homepage url on google Oauth api, credentials URI's
+                version of spotify,
+                version of playing songs from a folder, 
+                push notifications for the events,
+            }
+            
+    def sleep_tracker():
+        DEFINITION: Delay the alarm for few minutes by the variable snooze_minutes between songs.
+            Or when user click snooze button.
+            Track your sleep times every day, and save the hours you slept.
+        MODE_OF_OPERATION: 
+            1. gets sleep/awake flag and save time and date as start/end of sleep.
+            2. calculte the time you slept into date.sleep_hours .
+            3. convert to somthing that graph() will be able to work with.
+            4. save data in a file/database.
+        USER_EXPERIENCE: 
+            A sleep buttun with timer that will start to count and gif of night stuff. 
+            A wake up button jumps a message with how many hours you slept.
+    
+    def graph():
+        DEFINITION: draw a graph according to the hours the user  slept.
+        MODE_OF_OPERATION: 
+            1. read data from file.
+            2. create graph
+            3. send graph to browser.
+        USER_EXPERIENCE: 
+            An input with optional begin and end dates.
+    
+    def snooze():
+        DEFINITION: 
+            Delay the alarm for few minutes by the variable snooze_minutes between songs.
+            Or when user click snooze button.
+        MODE_OF_OPERATION:
+            1. get a flag snooze = True
+            2. Save song index in playlist.
+            3. Close tab.
+            4. turn on a timmer.
+            5. alarm from next song.
+        USER_EXPERIENCE:
+            User click snooze button, or wait until song is over.
+        
+    def lock_screen():
+        DEFINITION:
+            Lock computer screen on specific hour.
+            Can be calculated by wakeup time
+        MODE_OF_OPERATION:
+            1. wait untill time is sleep_time
+            2. lock screen
+        USER_EXPERIENCE:
+            User click snooze button (available only when song is on), or wait until song is over.
+    
+    def calender():
+        DEFINITION: 
+            When called, change wakeup_time by events on calender.
+        MODE_OF_OPERATION:
+            1. read from google calender 
+            2. check first event on calender from day_begins_hour on google calender.
+            3. change wakeup_time to (2)
+        
+        USER_EXPERIENCE:
+            User click on calender button and input relevant variables.
+        User responsibility:
+            User need to instal packages
+            User need to turn off 'sleep' in power settings.
+            Electron python
+            install youtube-dl
