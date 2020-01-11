@@ -59,7 +59,7 @@ class YouTube():
             playlistId=self.playlist_id,
         )
         playlist = request.execute()
-        self.song_in_playlist = (self.song_in_playlist + 1) % len(playlist)
+        self.song_in_playlist = (self.song_in_playlist + 1) % len(playlist['items'])
         with open(YouTube.PLAYLIST_INDEX_FILE, 'w') as playlist_index:
             playlist_index.write(str(self.song_in_playlist))
 

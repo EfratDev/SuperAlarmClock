@@ -133,3 +133,4 @@ dmypy.json
 *.pickle
 tests.py
 todo.txt
+song_in_playlist.txt
