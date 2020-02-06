@@ -10,6 +10,7 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 
+ALLOWED = 1
 VIDEO_ENDED = 6
 TOKEN_FILE = 'token.pickle'
 CREDS_FILE = 'credentials.json'
@@ -23,7 +24,7 @@ settings = {
     'morning_start_time': 5, 
     'morning_end_time': 14, 
     'wakeup_time_hour': 7, 
-    'wakeup_time_sec': 0, 
+    'wakeup_time_min': 0, 
     'wakeup_time_from_calendar': True, 
     'alarm_minutes_before_event': 60,
 }
@@ -52,6 +53,7 @@ def get_creds() -> Credentials:
 
 def play_video(video):
     p = vlc.MediaPlayer(video)
+    p.set_fullscreen(ALLOWED)
     p.play()
     while p.get_state() != VIDEO_ENDED:
         time.sleep(1)

@@ -82,13 +82,13 @@ def initialize(
         morning_start_time, 
         morning_end_time, 
         wakeup_time_hour, 
-        wakeup_time_sec,  
+        wakeup_time_min,  
         wakeup_time_from_calendar, 
         alarm_minutes_before_event,
     ):
     morning_start_time = dt.time(morning_start_time)
     morning_end_time = dt.time(morning_end_time)
-    wakeup_time = dt.time(wakeup_time_hour, wakeup_time_sec)
+    wakeup_time = dt.time(wakeup_time_hour, wakeup_time_min)
     alarm_date = _get_alarm_date(morning_start_time)
     wakeup_datetime = dt.datetime.combine(alarm_date, wakeup_time)
     alarm_sec_before_event = alarm_minutes_before_event * 60
