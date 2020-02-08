@@ -3,29 +3,22 @@ import socket
 import time
 from typing import Dict
 
+import pafy
 import vlc
 
 from googleapiclient.discovery import build
 
 import common
 
-try:
-    import pafy
-except ImportError:
-    Output.install_youtube_dl()
-
 
 class Output:
     @staticmethod
     def web_driver_exception():
-        print('You need to install gecodriver from here https:'
+        print('You need to install geckodriver from here: '
             'http://github.com/mozilla/geckodriver/releases'
-            '\nMake sure your Firefox and gecodriver is in PATH, then try '
+            '\nMake sure your Firefox and geckodriver is in PATH, then try '
             'again.')
 
-    @staticmethod     
-    def install_youtube_dl():
-        print("You need to install youtube-dl with 'sudo pip install --upgrade youtube_dl'")
 
 
 class YouTube():
@@ -68,9 +61,8 @@ class YouTube():
             ['contentDetails']['videoId']
         )
     
-    def play_next_song(self):
-        video = pafy.new(self.get_next_song_url()).getbest().url
-        common.play_video(video)
+    def get_next_song(self):
+        return pafy.new(self.get_next_song_url()).getbest().url
 
 
     @staticmethod

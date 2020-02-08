@@ -63,17 +63,7 @@ class SuperAlarmClock:
             5. alarm from next song.
         USER_EXPERIENCE:
             User click snooze button, or wait until song is over.
-        
-    def lock_screen():
-        DEFINITION:
-            Lock computer screen on specific hour.
-            Can be calculated by wakeup time
-        MODE_OF_OPERATION:
-            1. wait untill time is sleep_time
-            2. lock screen
-        USER_EXPERIENCE:
-            User click snooze button (available only when song is on), or wait until song is over.
-    
+
     def calender():
         DEFINITION: 
             When called, change wakeup_time by events on calender.
@@ -87,5 +77,8 @@ class SuperAlarmClock:
         User responsibility:
             User need to instal packages
             User need to turn off 'sleep' in power settings.
-            Electron python
-            install youtube-dl
+            # Electron python
+            install youtube-dl with 'sudo pip install --upgrade youtube_dl
+        
+        TO_DO:
+            write read_me.txt, requirements.txt

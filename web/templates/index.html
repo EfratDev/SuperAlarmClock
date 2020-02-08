@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Super Alarm Clock</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
         <link href="css/style.css" rel="stylesheet">
     </head>
     <body class="text-center">
@@ -12,40 +12,38 @@
                 <h2 class="mb-2">Super Alarm Clock</h2><br>
                 <div>
                     <p>
-                        Snooze minutes (1-30): <input type="number" min="1" max="30" name=snooze_minutes>
+                        Snooze minutes (0-30): <input value="10" type="number" min="0" max="30" name="snooze_minutes">
+                    </p>
+                    <p>
+                        Wake me up at: <input value="10:00" type="time" name="wakeup_time"><br>
+                        *When calendar option is on, Use this hour when there is no internet connection.
                     </p>
                 </div>
                 <div class="custom-control custom-switch">
                     <p>
-                        <input type="checkbox" class="custom-control-input" id="wakeup_time_from_calendar">
+                        <input type="checkbox" class="custom-control-input" id="wakeup_time_from_calendar" name="wakeup_time_from_calendar">
                         <label class="custom-control-label" for="wakeup_time_from_calendar">Wake me up by my google calendar events time.</label>
                     </p>
                 </div>
                 <div id="by_hand_wakeup_form">
-                    <p>
-                        Wake me up at: <input type="time" name="wakeup_time">
-                    </p>
                 </div>
                 <div class="text-left" id="calendar_wakeup_form">
                     <p>
-                        My morning starts at: <input type="time" name="morning_start_time">
+                        My morning starts at: <input value="05:00" type="time" name="morning_start_time">
                     </p>
                     <p>
-                        My morning ends at: <input type="time" name="morning_end_time">
+                        My morning ends at: <input value="14:00" type="time" name="morning_end_time">
                     </p>
                     <p>
-                        When there is no internet connection, wake me up at: <input type="time" name="wakeup_time">
-                    </p>
-                    <p>
-                        Wake me up at - <input type="number" min="0" max="180" name="wakeup_time"> - minutes before my first event in the morning.
+                        Wake me up at (0-180) - <input value="60" type="number" min="0" max="180" name="alarm_minutes_before_event"> - minutes before my first event in the morning.
                     </p>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </body>
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/toggle_time_forms.js"></script>
 </html>
