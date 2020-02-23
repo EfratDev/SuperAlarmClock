@@ -1,11 +1,13 @@
-from httplib2 import ServerNotFoundError
+from collections import namedtuple
+from typing import NamedTuple, Optional
 import datetime as dt
+import logging
 import socket
 import time
 
-import vlc
-
+from httplib2 import ServerNotFoundError
 import google.auth.exceptions
+import vlc
 
 import common
 import google_calendar_api as gc
@@ -17,115 +19,119 @@ CONNECTION_TRIES = 3
 NO_INTERNET_VIDEO = "no_internet_song.mp4"
 
 
-@common.snooze_feature
-def alarm(youtube_session):
-    video = NO_INTERNET_VIDEO
-    for _ in range(CONNECTION_TRIES):
-        if video == NO_INTERNET_VIDEO:
-            try:
-                video = youtube_session.get_next_song()
-            except (AttributeError, socket.timeout):
-                continue
+web_dependent_vars = namedtuple(
+    'Conn',
+    ['is_from_calendar','youtube_session','wakeup_time']
+)
+params = namedtuple(
+    'Params',
+    ['youtube_session', 'secondes_before_event', 'wakeup_time']
+)
 
-    common.play_video(video)
-    return True
+
+def get_video(youtube_session: youtube_api.YouTube) -> str:
+    for _ in range(CONNECTION_TRIES):
+        try:
+            return youtube_session.get_next_song()
+        except (AttributeError, socket.timeout) as e:
+            logging.warning(e)
+    return NO_INTERNET_VIDEO
+
+
+@common.snooze_feature
+def alarm(youtube_session: youtube_api.YouTube) -> None:
+    common.play_video(get_video(youtube_session))
 
 
 def wait_until_alarm(
-        youtube_session, 
-        morning_start_time, 
-        morning_end_time, 
-        alarm_sec_before_event, 
-        wakeup_datetime,
-        calendar, 
-        ):
-    if calendar:
-        try:
-            wakeup_datetime = calendar.get_first_event_datetime()
-        except ServerNotFoundError:
-            time.sleep(EVENT_REFRESH_INTERVAL)
-            return
-
-    time_until_alarm = (wakeup_datetime - dt.datetime.now()).total_seconds()
-    time_until_alarm -=  alarm_sec_before_event
-    if time_until_alarm > EVENT_REFRESH_INTERVAL:
-        time.sleep(EVENT_REFRESH_INTERVAL)
-    elif time_until_alarm < 0:
-        alarm(youtube_session)
-    else:
-        time.sleep(time_until_alarm)
-        alarm(youtube_session)
+        secondes_before_event: int,
+        wakeup_time: Optional[dt.time]
+        ) -> None:
+    time_until_alarm = (wakeup_time - dt.datetime.now()).total_seconds()
+    time_until_alarm -= secondes_before_event
+    time.sleep(min(EVENT_REFRESH_INTERVAL, max(time_until_alarm, 0)))
+    return time_until_alarm <= EVENT_REFRESH_INTERVAL  # alarm or refresh data
 
 
-def _get_alarm_date(from_calendar, wakeuptime, morning_start_time):
+def _get_wakeup_date(
+        is_from_calendar: bool, 
+        wakeuptime: dt.time, 
+        earliest_wakeup: dt.time
+        ) -> dt.datetime:
     now_time = dt.datetime.now().time()
-    if ((from_calendar and now_time > morning_start_time) or
-            (not from_calendar and wakeuptime < now_time)):
+    if ((is_from_calendar and now_time > earliest_wakeup) or
+            (not is_from_calendar and wakeuptime < now_time)):
         return dt.date.today() + dt.timedelta(days=1)
-    
     return dt.datetime.today()
 
 
-def get_user_input():
+def get_user_input() -> list:
     with common.settings_lock:
         return list(common.settings.values())[1:]  # without snooze minutes
 
 
-def convert_strtime_to_time(str_time):
+def convert_strtime_to_time(str_time: str) -> dt.time:
     return dt.datetime.strptime(str_time, "%H:%M").time()
 
 
 def get_web_dependent_vars(
-        wakeup_time_from_calendar, 
-        morning_start_time, 
-        morning_end_time,
-        ):
+        is_from_calendar: bool, 
+        earliest_wakeup: dt.time, 
+        latest_wakeup: dt.time,
+        ) -> NamedTuple:
     try:
         google_api_creds = common.get_creds()
         youtube_session = youtube_api.YouTube(google_api_creds)
-        calendar = gc.Calendar(
+        calendar_conn = gc.Calendar(
             google_api_creds, 
-            morning_start_time, 
-            morning_end_time
+            earliest_wakeup, 
+            latest_wakeup
         )
+        wakeup_time = calendar_conn.get_first_event_datetime()
     except (ServerNotFoundError, google.auth.exceptions.TransportError):
-        return False, None, False
+        return web_dependent_vars(False, False, False)
 
-    return wakeup_time_from_calendar, youtube_session, calendar
+    return web_dependent_vars(is_from_calendar, youtube_session, wakeup_time)
 
 
 def initialize(
-        morning_start_time, 
-        morning_end_time, 
-        wakeup_time, 
-        from_calendar, 
-        alarm_minutes_before_event,
-    ):
-    morning_start_time = convert_strtime_to_time(morning_start_time)
-    morning_end_time = convert_strtime_to_time(morning_end_time)
+        earliest_wakeup: dt.time, 
+        latest_wakeup: dt.time,
+        wakeup_time: dt.time, 
+        is_from_calendar: bool, 
+        minutes_before_event: int,
+    ) -> NamedTuple:
+    earliest_wakeup = convert_strtime_to_time(earliest_wakeup)
+    latest_wakeup = convert_strtime_to_time(latest_wakeup)
     wakeup_time = convert_strtime_to_time(wakeup_time)
-    alarm_date = _get_alarm_date(from_calendar, wakeup_time, morning_start_time)
-    wakeup_datetime = dt.datetime.combine(alarm_date, wakeup_time)
-    alarm_sec_before_event = int(alarm_minutes_before_event) * 60
-    from_calendar, youtube_session, calendar = get_web_dependent_vars(
-        from_calendar,
-        morning_start_time, 
-        morning_end_time
+    wakeup_date = _get_wakeup_date(
+        is_from_calendar, 
+        wakeup_time, 
+        earliest_wakeup
     )
-    if not from_calendar:
-        calendar = False
-        alarm_sec_before_event = 0
+    wakeup_time = dt.datetime.combine(wakeup_date, wakeup_time)
+    secondes_before_event = int(minutes_before_event) * 60
+    conn = get_web_dependent_vars(
+        is_from_calendar,
+        earliest_wakeup, 
+        latest_wakeup
+    )
+
+    if conn.is_from_calendar:
+        if conn.wakeup_time is None:
+            wakeup_time = dt.datetime.now() + dt.timedelta(days=999)
+        else:
+            wakeup_time = conn.wakeup_time
+    else:
+        secondes_before_event = 0
     
-    return (
-        youtube_session, 
-        morning_start_time, 
-        morning_end_time, 
-        alarm_sec_before_event, 
-        wakeup_datetime, 
-        calendar,
-    )
+    return params(conn.youtube_session, secondes_before_event, wakeup_time)
 
 
-def super_alarm_clock():
+def super_alarm_clock() -> None:
     while True:
-        wait_until_alarm(*initialize(*get_user_input()))
+        params = initialize(*get_user_input())
+        if wait_until_alarm(params.secondes_before_event, params.wakeup_time):
+            alarm(params.youtube_session)
+
+super_alarm_clock()
